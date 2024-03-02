@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:trash_game/main.dart';
+import 'package:trash_game/trashgame.dart';
 import 'package:trash_game/trashitem.dart';
 
 class Trashcan extends SpriteComponent with HasGameRef<TrashGame>, CollisionCallbacks {
@@ -10,7 +13,7 @@ class Trashcan extends SpriteComponent with HasGameRef<TrashGame>, CollisionCall
   Future<void>? onLoad() async {
     super.onLoad();
     sprite = await gameRef.loadSprite("trashcan_$type.png");
-    size = Vector2.all(gameRef.size.x/5);
+    size = Vector2.all(min(gameRef.size.x, gameRef.size.y)/4);
     priority = 2;
     anchor = Anchor.center;
     add(RectangleHitbox());

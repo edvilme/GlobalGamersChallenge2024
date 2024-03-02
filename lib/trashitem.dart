@@ -5,6 +5,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:trash_game/main.dart';
+import 'package:trash_game/trashgame.dart';
 
 class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCallbacks{
   late String type;
@@ -20,7 +21,7 @@ class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCal
       .toList();
     // Select random sprite
     sprite = await gameRef.loadSprite(icons.elementAt(Random().nextInt(icons.length)));
-    size = Vector2.all(60);
+    size = Vector2.all( 0.75 * min(gameRef.size.x, gameRef.size.y) / 5 );
     add(RectangleHitbox());
     // debugMode = true;
   }
