@@ -1,162 +1,177 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:trash_game/trashcan.dart';
 import 'package:trash_game/trashitem.dart';
 import 'package:trash_game/utils.dart';
 
-class TrashGame extends FlameGame with KeyboardEvents, PanDetector, TapDetector, ScrollDetector, HasCollisionDetection {
-  static int KEYBOARD_EVENT_HORIZONTAL_DISTANCE = 20;
-  static double FALL_SPEED = 2;
-  static double PAN_GESTURE_SENSITIVITY = 1;
-  static late double FLOOR_DEPTH_GROW_RATE;
-
-  int score = 1;
-  double floorDepth = 100;
-
-  TrashItem currentTrashItem = TrashItem();
-  TextComponent scoreTextComponent = TextComponent()
-    ..priority = 1
-    ..anchor = Anchor.center
-    ..textRenderer = TextPaint(
-      style: const TextStyle(
-        fontSize: 80, 
-        fontWeight: FontWeight.bold
-      )
-    );
-
-  Trashcan trashcanOrganic = Trashcan()..type = 'organic';
-  Trashcan trashcanPaper = Trashcan()..type = 'paper';
-  Trashcan trashcanGlass = Trashcan()..type = 'glass';
-  Trashcan trashcanPlastic = Trashcan()..type = 'plastic';
+class TrashGame extends FlameGame with
+KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection {
+  late double trashCanWidth;
+  late double trashItemWidth;
+  Trashcan organicTrashcan = Trashcan(type: 'organic');
+  Trashcan paperTrashcan = Trashcan(type: 'paper');
+  Trashcan glassTrashcan = Trashcan(type: 'glass');
+  Trashcan plasticTrashcan = Trashcan(type: 'plastic');
   SpriteComponent trashMountain = SpriteComponent();
+  TextComponent scoreTextComponent = TextComponent();
+
+  late TrashItem currentTrashItem;
+  // Game params
+  late double trashMountainHeight;
+  late double fallSpeed;
+  late int score;
+
+  late bool hasAccessibleNavigation;
+  @override
+  Color backgroundColor() => const Color(0xFF00ACE6);
 
   @override
-  //Color backgroundColor() => const Color(0xFF87CEFA);
-  Color backgroundColor() => const Color(0x00000000);
-
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    FLOOR_DEPTH_GROW_RATE = size.y/100;
-    add(
-      trashMountain
-        ..sprite = await loadSprite("trash_mountain.png")
-        ..size = Vector2(size.x, 2*size.y)
-        ..priority = 1
-        ..anchor = Anchor.topCenter
-        ..position.x = size.x/2
-        ..position.y = size.y - floorDepth - (size.x/5)
-    );
-    add(
-      scoreTextComponent
-        ..text = score.toString()
-        ..position = Vector2(size.x/2, 100)
-    );
-    add(trashcanOrganic
-        ..position = Vector2(size.x/4 - size.x/8, size.y - floorDepth));
-    add(trashcanPaper
-        ..position = Vector2(2*size.x/4 - size.x/8, size.y - floorDepth));
-    add(trashcanGlass
-        ..position = Vector2(3*size.x/4 - size.x/8, size.y - floorDepth));
-    add(trashcanPlastic
-        ..position = Vector2(size.x - size.x/8, size.y - floorDepth));
+  Future<void>? onLoad() async {
+    trashCanWidth = min(size.x, size.y)/4;
+    trashItemWidth = trashCanWidth * 0.75;
+    // Reset game
+    resetGameParameters();
+    // Score component
+    add(scoreTextComponent
+      ..position = Vector2(size.x/2, 160)
+      ..anchor = Anchor.bottomCenter
+      ..text = score.toString()
+      ..textRenderer = TextPaint(
+        style: const TextStyle(
+          fontSize: 80,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'monospace'
+        )
+      ));
+    // Mountain
+    add(trashMountain
+      ..sprite = await loadSprite("trash_mountain.png")
+      ..size = Vector2(size.x, size.y)
+      ..anchor = Anchor.topCenter
+      ..position.x = size.x/2
+      ..position.y = size.y - trashCanWidth - trashMountainHeight
+      ..priority = 2);
+    // Trashcans
+    add(organicTrashcan
+      ..position.x = (size.x - 4 * trashCanWidth) / 2 + trashCanWidth - trashCanWidth/2
+      ..size = Vector2.all(trashCanWidth));
+    add(paperTrashcan
+      ..position.x = (size.x - 4 * trashCanWidth) / 2 + 2 * trashCanWidth - trashCanWidth/2
+      ..size = Vector2.all(trashCanWidth));
+    add(glassTrashcan
+      ..position.x = (size.x - 4 * trashCanWidth) / 2 + 3 * trashCanWidth - trashCanWidth/2
+      ..size = Vector2.all(trashCanWidth));
+    add(plasticTrashcan
+      ..position.x = (size.x - 4 * trashCanWidth) / 2 + 4 * trashCanWidth - trashCanWidth/2
+      ..size = Vector2.all(trashCanWidth));
+    // Trash item
     generateTrashItem();
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    if (floorDepth > size.y * 0.8) {
-      overlays.add('gameover');
-      pauseEngine();
-    }
     if (!currentTrashItem.isInbound()) missedScore();
-    currentTrashItem.position.y += FALL_SPEED;
+    if (trashMountainHeight > size.y / 2) {
+      pauseEngine(); 
+      overlays.add('gameover');
+    }
+    scoreTextComponent.text = score.toString();
   }
 
-  void generateTrashItem(){
-    currentTrashItem = new TrashItem();
-    add(
-      currentTrashItem
-        ..position = Vector2(size.x/2, 0)
-        ..anchor = Anchor.center
-        ..priority = 2
+  void resetGameParameters(){
+    trashMountainHeight = 0;
+    fallSpeed = 200;
+    score = 0;
+    resumeEngine();
+    // Reset positions
+    organicTrashcan.position.y = size.y - trashCanWidth;
+    paperTrashcan.position.y = size.y - trashCanWidth;
+    glassTrashcan.position.y = size.y - trashCanWidth;
+    plasticTrashcan.position.y = size.y - trashCanWidth;
+    trashMountain.position.y = size.y - trashCanWidth; 
+  }
+
+  void generateTrashItem() {
+    currentTrashItem = TrashItem()
+      ..position = Vector2(size.x/2, -trashItemWidth/2)
+      ..size = Vector2.all(trashItemWidth);
+    currentTrashItem.add(
+      MoveToEffect(Vector2(size.x/2, size.y), EffectController(speed: fallSpeed, curve: Curves.easeIn))
     );
-    FALL_SPEED *= 1.01;
+    add(currentTrashItem);
+    fallSpeed *= 1.01;
   }
 
   void addScore(){
     remove(currentTrashItem);
     generateTrashItem();
     score++;
-    scoreTextComponent.text = score.toString();
+    // Scale text score
+    scoreTextComponent.add(
+      ScaleEffect.by(Vector2.all(1.2), EffectController(duration: 0.05, alternate: true))
+    );
   }
 
   void missedScore(){
     remove(currentTrashItem);
     generateTrashItem();
-    floorDepth += FLOOR_DEPTH_GROW_RATE;
-    trashMountain.position.y -= FLOOR_DEPTH_GROW_RATE * 1.75;
+    // Shake text score
+    scoreTextComponent.add(
+      SequenceEffect([
+        MoveByEffect(Vector2(-10, 0), EffectController(duration: 0.04)),
+        MoveByEffect(Vector2(10, 0), EffectController(duration: 0.04)),
+      ], alternate: true, repeatCount: 2)
+    );
+    // Move trash mountain
+    trashMountainHeight += size.y/100;
+    organicTrashcan.add(MoveByEffect(Vector2(0, -size.y/100), EffectController(duration: 0.05)));
+    paperTrashcan.add(MoveByEffect(Vector2(0, -size.y/100), EffectController(duration: 0.05)));
+    glassTrashcan.add(MoveByEffect(Vector2(0, -size.y/100), EffectController(duration: 0.05)));
+    plasticTrashcan.add(MoveByEffect(Vector2(0, -size.y/100), EffectController(duration: 0.05)));
+    trashMountain.add(MoveByEffect(Vector2(0, -size.y/100), EffectController(duration: 0.05)));
+  }
 
-    trashcanOrganic.position.y -= FLOOR_DEPTH_GROW_RATE;
-    trashcanPaper.position.y -= FLOOR_DEPTH_GROW_RATE;
-    trashcanGlass.position.y -= FLOOR_DEPTH_GROW_RATE;
-    trashcanPlastic.position.y -= FLOOR_DEPTH_GROW_RATE;
+  void moveCurrentTrashItemHorizontally(double distance) {
+    currentTrashItem.position.x = adjustToRange(
+      currentTrashItem.position.x + distance, 
+      trashCanWidth/2, 
+      size.x - trashCanWidth/2);
   }
 
   @override
-  KeyEventResult onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed){
-    if (event is RawKeyEvent){
-      if (keysPressed.contains(LogicalKeyboardKey.arrowLeft)){
-        currentTrashItem.position.x = adjustToRange(
-          currentTrashItem.position.x - KEYBOARD_EVENT_HORIZONTAL_DISTANCE, 
-          currentTrashItem.size.x/2, 
-          size.x - currentTrashItem.size.x/2);
+  KeyEventResult onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (event is RawKeyEvent) {
+      if (keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+        moveCurrentTrashItemHorizontally(-trashCanWidth/2);
       }
-      if (keysPressed.contains(LogicalKeyboardKey.arrowRight)){
-        currentTrashItem.position.x = adjustToRange(
-          currentTrashItem.position.x + KEYBOARD_EVENT_HORIZONTAL_DISTANCE, 
-          currentTrashItem.size.x/2, 
-          size.x - currentTrashItem.size.x/2);
+      if (keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+        moveCurrentTrashItemHorizontally(trashCanWidth/2);
       }
-      return KeyEventResult.handled;
     }
-    return KeyEventResult.ignored;
+    return KeyEventResult.handled;
+  }
+
+  @override
+  void onTapDown(TapDownInfo info){
+    if (info.eventPosition.viewport.x < currentTrashItem.position.x) {
+      moveCurrentTrashItemHorizontally(-trashCanWidth/2);
+    }
+    if (info.eventPosition.viewport.x > currentTrashItem.position.x) {
+      moveCurrentTrashItemHorizontally(trashCanWidth/2);
+    }
   }
 
   @override
   void onPanUpdate(DragUpdateInfo info) {
-    double panDistance = info.delta.game.x * PAN_GESTURE_SENSITIVITY;
-    currentTrashItem.position.x = adjustToRange(
-      currentTrashItem.position.x + panDistance, 
-      currentTrashItem.size.x/2, 
-      size.x - currentTrashItem.size.x/2);
-  }
-
-  @override
-  void onTapDown(TapDownInfo info) {
-    if (info.eventPosition.viewport.x < size.x / 2){
-      currentTrashItem.position.x = adjustToRange(
-        currentTrashItem.position.x - KEYBOARD_EVENT_HORIZONTAL_DISTANCE, 
-        currentTrashItem.size.x/2, 
-        size.x - currentTrashItem.size.x/2);
-    }
-    if (info.eventPosition.viewport.x > size.x / 2){
-      currentTrashItem.position.x = adjustToRange(
-        currentTrashItem.position.x + KEYBOARD_EVENT_HORIZONTAL_DISTANCE, 
-        currentTrashItem.size.x/2, 
-        size.x - currentTrashItem.size.x/2);
-    }
-  }
-
-  @override
-  void onScroll(PointerScrollInfo info) {
-    // TODO: implement onScroll
-    super.onScroll(info);
+    moveCurrentTrashItemHorizontally(info.delta.game.x);
   }
 }
-
