@@ -112,6 +112,7 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
     fallSpeed *= 1.01;
   }
 
+
   void addScore(){
     remove(currentTrashItem);
     generateTrashItem();

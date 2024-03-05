@@ -1,5 +1,9 @@
 # trash_game
 
+## Aknowledgments
+- Image detection: google_mlkit_image_labeling (base model)
+- Icons and graphics: Rebeca Juarez
+
 A new Flutter project.
 
 ## Getting Started
