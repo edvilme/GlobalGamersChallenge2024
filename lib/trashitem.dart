@@ -11,13 +11,12 @@ import 'package:trash_game/main.dart';
 import 'package:trash_game/trashgame.dart';
 
 class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCallbacks{
+  static final List categories = ['glass', 'organic', 'paper', 'plastic', 'magic'];
   late String type;
-  String? a11y_name;
   @override
   Future<void>? onLoad() async {
     // Get random category
-    type = ['glass', 'organic', 'paper', 'plastic'].elementAt(Random().nextInt(4));
-    // Get all files
+    type = categories.elementAt(Random().nextInt( categories.length ));
     List icons = json.decode(await rootBundle.loadString('AssetManifest.json')).keys
       .where((String key) => key.contains('assets/images/$type'))
       .map((String key) => key.replaceAll(RegExp('assets/images'), ''))
@@ -25,10 +24,6 @@ class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCal
     // Select random sprite (and get a11y name)
     String spriteName = icons.elementAt(Random().nextInt(icons.length));
     sprite = await gameRef.loadSprite(spriteName);
-    // Accesibility (announce on generation)
-    // a11y_name = spriteName.replaceAll('_', ' ').replaceAll('.png', '').replaceAll(RegExp(r'^\/\w+\/'), '');
-    // SemanticsService.announce("Trash item is $a11y_name", TextDirection.ltr);
-    // Rendering
     anchor = Anchor.center;
     priority = 1;
     add(RectangleHitbox());

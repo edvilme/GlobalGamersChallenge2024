@@ -25,9 +25,14 @@ class Trashcan extends SpriteComponent with HasGameRef<TrashGame>, CollisionCall
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (other is TrashItem && other.type == type) {
-      gameRef.addScore();
-      bounce();
+    if (other is TrashItem) {
+      if (other.type == type) {
+        gameRef.addScore();
+        bounce();
+      } else if (other.type == 'magic') {
+        gameRef.showCameraMinigame();
+        bounce();
+      }
     }
   }
 

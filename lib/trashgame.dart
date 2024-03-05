@@ -35,7 +35,7 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
 
   @override
   Future<void>? onLoad() async {
-    trashCanWidth = min(size.x, size.y)/4;
+    trashCanWidth = min(size.x, size.y/2)/4;
     trashItemWidth = trashCanWidth * 0.75;
     // Reset game
     resetGameParameters();
@@ -58,6 +58,7 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
       ..anchor = Anchor.topCenter
       ..position.x = size.x/2
       ..position.y = size.y - trashCanWidth - trashMountainHeight
+      ..setColor(Colors.yellow)
       ..priority = 2);
     // Trashcans
     add(organicTrashcan
@@ -146,6 +147,20 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
       trashCanWidth/2, 
       size.x - trashCanWidth/2);
   }
+
+  void resumeGame() {
+    overlays.clear();
+    resumeEngine();
+  }
+
+  void showCameraMinigame(){
+    remove(currentTrashItem);
+    generateTrashItem();
+    pauseEngine();
+    overlays.add('camera_minigame');
+  }
+
+
 
   @override
   KeyEventResult onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
