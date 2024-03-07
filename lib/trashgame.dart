@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flame/components.dart';
@@ -8,12 +9,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trash_game/trashcan.dart';
 import 'package:trash_game/trashitem.dart';
 import 'package:trash_game/utils.dart';
 
+class PauseButton extends SpriteComponent with HasGameRef<TrashGame>, Tappable {
+  @override
+  Future<void>? onLoad() async {
+    sprite = await gameRef.loadSprite("pause.circle.fill.png");
+  }
+  @override
+  bool onTapDown(TapDownInfo info) {
+    gameRef.pauseEngine();
+    gameRef.overlays.add('pause');
+    return true;
+  }
+}
+
 class TrashGame extends FlameGame with
-KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection {
+KeyboardEvents, PanDetector, ScrollDetector, HasCollisionDetection, HasTappables {
   late double trashCanWidth;
   late double trashItemWidth;
   Trashcan organicTrashcan = Trashcan(type: 'organic');
@@ -22,6 +37,7 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
   Trashcan plasticTrashcan = Trashcan(type: 'plastic');
   SpriteComponent trashMountain = SpriteComponent();
   TextComponent scoreTextComponent = TextComponent();
+  PauseButton pauseButton = PauseButton();
 
   late TrashItem currentTrashItem;
   // Game params
@@ -40,9 +56,13 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
     // Reset game
     resetGameParameters();
     // Score component
+    add(pauseButton
+      ..position = Vector2(size.x - 40, 100)
+      ..anchor = Anchor.centerRight
+      ..size = Vector2.all(40));
     add(scoreTextComponent
-      ..position = Vector2(size.x/2, 160)
-      ..anchor = Anchor.bottomCenter
+      ..position = Vector2(size.x/2, 100)
+      ..anchor = Anchor.center
       ..text = score.toString()
       ..textRenderer = TextPaint(
         style: const TextStyle(
@@ -81,24 +101,28 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
   void update(double dt) {
     super.update(dt);
     if (!currentTrashItem.isInbound()) missedScore();
-    if (trashMountainHeight > size.y / 2) {
-      pauseEngine(); 
-      overlays.add('gameover');
-    }
+    if (trashMountainHeight > size.y / 2) setGameOver();
     scoreTextComponent.text = score.toString();
   }
 
+  void setGameOver() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setInt('score', score);
+    pauseEngine();
+    overlays.add('gameover');
+  }
+
   void resetGameParameters(){
-    trashMountainHeight = 0;
+    trashMountainHeight = 400;
     fallSpeed = 200;
     score = 0;
     resumeEngine();
     // Reset positions
-    organicTrashcan.position.y = size.y - trashCanWidth;
-    paperTrashcan.position.y = size.y - trashCanWidth;
-    glassTrashcan.position.y = size.y - trashCanWidth;
-    plasticTrashcan.position.y = size.y - trashCanWidth;
-    trashMountain.position.y = size.y - trashCanWidth; 
+    organicTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    paperTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    glassTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    plasticTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    trashMountain.position.y = size.y - trashCanWidth - trashMountainHeight; 
   }
 
   void generateTrashItem() {
@@ -109,9 +133,18 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
       MoveToEffect(Vector2(size.x/2, size.y), EffectController(speed: fallSpeed, curve: Curves.easeIn))
     );
     add(currentTrashItem);
-    fallSpeed *= 1.01;
+    if (fallSpeed < 500) fallSpeed *= 1.02;
   }
 
+  void recoverLives(){
+    trashMountainHeight /= 3;
+    resumeEngine();
+    organicTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    paperTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    glassTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    plasticTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;
+    trashMountain.position.y = size.y - trashCanWidth - trashMountainHeight; 
+  }
 
   void addScore(){
     remove(currentTrashItem);
@@ -177,7 +210,8 @@ KeyboardEvents, PanDetector, ScrollDetector, TapDetector, HasCollisionDetection 
   }
 
   @override
-  void onTapDown(TapDownInfo info){
+  void onTapDown(int pointerId, TapDownInfo info) {
+    super.onTapDown(pointerId, info);
     if (info.eventPosition.viewport.x < currentTrashItem.position.x) {
       moveCurrentTrashItemHorizontally(-trashCanWidth/2);
     }

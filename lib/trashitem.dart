@@ -11,8 +11,7 @@ import 'package:trash_game/main.dart';
 import 'package:trash_game/trashgame.dart';
 
 class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCallbacks{
-  // TODO: Better way to controll magic occurrence
-  static final List categories = ['glass', 'organic', 'paper', 'plastic', 'glass', 'organic', 'paper', 'plastic', 'magic'];
+  static final List categories = ['glass', 'organic', 'paper', 'plastic'];
   late String type;
   @override
   Future<void>? onLoad() async {
