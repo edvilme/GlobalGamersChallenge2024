@@ -19,8 +19,7 @@ class PauseButton extends SpriteComponent with HasGameRef<TrashGame>, Tappable {
   }
   @override
   bool onTapDown(TapDownInfo info) {
-    gameRef.pauseEngine();
-    gameRef.overlays.add('pause');
+    gameRef.pauseGame();
     return true;
   }
 }
@@ -180,6 +179,11 @@ KeyboardEvents, PanDetector, ScrollDetector, HasCollisionDetection, HasTappables
       size.x - trashCanWidth/2);
   }
 
+  void pauseGame(){
+    pauseEngine();
+    overlays.add('pause');
+  }
+
   void resumeGame() {
     overlays.clear();
     resumeEngine();
@@ -202,6 +206,9 @@ KeyboardEvents, PanDetector, ScrollDetector, HasCollisionDetection, HasTappables
       }
       if (keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
         moveCurrentTrashItemHorizontally(trashCanWidth/2);
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.escape)) {
+        pauseGame();
       }
     }
     return KeyEventResult.handled;
