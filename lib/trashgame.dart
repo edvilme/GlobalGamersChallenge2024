@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flame/components.dart';
@@ -112,9 +111,9 @@ KeyboardEvents, PanDetector, ScrollDetector, HasCollisionDetection, HasTappables
   }
 
   void resetGameParameters(){
-    trashMountainHeight = 600;
+    trashMountainHeight = 0;
     fallSpeed = 200;
-    score = 20;
+    score = 0;
     resumeEngine();
     // Reset positions
     organicTrashcan.position.y = size.y - trashCanWidth - trashMountainHeight;

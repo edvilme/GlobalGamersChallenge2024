@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:flame/game.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:trash_game/trashgame.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
@@ -31,8 +28,7 @@ class PauseScreen extends StatelessWidget {
               Text("PAUSE",
                 style: 
                   Theme.of(context).textTheme.displayLarge!.copyWith(color: Colors.white, fontWeight: FontWeight.bold),), 
-              const Spacer(),
-              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\nImage Labeling: Google ML Kit Image Labeling (Base Model)", 
+              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\nImage Labeling: Google ML Kit Image Labeling (Base Model)\n\n@edvilme 2024",
                 textAlign: TextAlign.center,
                 style: 
                   Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),
@@ -44,14 +40,14 @@ class PauseScreen extends StatelessWidget {
                       game!.overlays.clear();
                       game!.resetGameParameters();
                     },
-                    child: Text("Restart"),
+                    child: const Text("Restart"),
                   ),
                   ElevatedButton(
                     onPressed: (){
                       game!.overlays.clear();
                       game!.resumeGame();
                     },
-                    child: Text("Resume")),
+                    child: const Text("Resume")),
                 ],
               )
             ],

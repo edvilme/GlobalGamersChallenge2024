@@ -56,13 +56,15 @@ class GameOverScreenState extends State<GameOverScreen> {
   void updateHighScore() async {
     SharedPreferences scoreData = await SharedPreferences.getInstance();
     int score = scoreData.getInt('score') ?? 0;
-    int currentHighScore = scoreData.getInt('highscore') ?? 0;
-    if (score > currentHighScore){
+    int previousHighScore = scoreData.getInt('highscore') ?? 0;
+    ScoreAchievement previousScoreAchievement = getAchievementFromScore(previousHighScore);
+    if (score > previousHighScore){
+      ScoreAchievement currentScoreAchievement = getAchievementFromScore(score);
       scoreData.setInt('highscore', score);
       setState(() {
         isHighScore = true;
         highScore = score;
-        achievement = getAchievementFromScore(score);
+        achievement = currentScoreAchievement != previousScoreAchievement ? currentScoreAchievement : ScoreAchievement.none;
       });
     }
   }
@@ -85,6 +87,10 @@ class GameOverScreenState extends State<GameOverScreen> {
               "id": "$_issuerId.$_passId",
               "classId": "$_issuerId.$_passClass",
               "genericType": "GENERIC_TYPE_UNSPECIFIED",
+              "groupingInfo": {
+                "groupingId": "trashball_high_score",
+                "sortIndex": 1
+              },
               "hexBackgroundColor": "#4285f4",
               "logo": {
                 "sourceUri": {
@@ -193,7 +199,7 @@ class GameOverScreenState extends State<GameOverScreen> {
 
     Set<String> identifiedLabels = labels.map((e) => e.label).toSet().intersection(trashLabels);
 
-    if (!identifiedLabels.isEmpty) {
+    if (identifiedLabels.isNotEmpty) {
       widget.game!.overlays.clear();
       widget.game!.recoverLives();
     } else {
