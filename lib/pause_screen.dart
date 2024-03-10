@@ -32,7 +32,7 @@ class PauseScreen extends StatelessWidget {
                 style: 
                   Theme.of(context).textTheme.displayLarge!.copyWith(color: Colors.white, fontWeight: FontWeight.bold),), 
               const Spacer(),
-              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\n", 
+              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\nImage Labeling: Google ML Kit Image Labeling (Base Model)", 
                 textAlign: TextAlign.center,
                 style: 
                   Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),

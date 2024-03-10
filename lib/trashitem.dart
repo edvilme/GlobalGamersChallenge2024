@@ -19,7 +19,7 @@ class TrashItem extends SpriteComponent with HasGameRef<TrashGame>, CollisionCal
     type = categories.elementAt(Random().nextInt( categories.length ));
     List icons = json.decode(await rootBundle.loadString('AssetManifest.json')).keys
       .where((String key) => key.contains('assets/images/$type'))
-      .map((String key) => key.replaceAll(RegExp('assets/images'), ''))
+      .map((String key) => key.replaceAll(RegExp('assets/images/'), ''))
       .toList();
     // Select random sprite (and get a11y name)
     String spriteName = icons.elementAt(Random().nextInt(icons.length));
