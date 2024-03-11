@@ -147,6 +147,8 @@ KeyboardEvents, PanDetector, ScrollDetector, HasCollisionDetection, HasTappables
     remove(currentTrashItem);
     generateTrashItem();
     score++;
+    // Haptic feedback
+    HapticFeedback.lightImpact();
     // Scale text score
     scoreTextComponent.add(
       ScaleEffect.by(Vector2.all(1.2), EffectController(duration: 0.05, alternate: true))

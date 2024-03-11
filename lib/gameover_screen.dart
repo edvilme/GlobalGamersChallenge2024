@@ -134,7 +134,7 @@ class GameOverScreenState extends State<GameOverScreen> {
   }
 
   Widget renderAddToGoogleWalletButton(){
-    if ( achievement != ScoreAchievement.none && (kIsWeb || Platform.isAndroid)){
+    if (kIsWeb || Platform.isAndroid){
       return AddToGoogleWalletButton(pass: generateGoogleWalletPass());
     }
     else {
@@ -198,7 +198,7 @@ class GameOverScreenState extends State<GameOverScreen> {
     Set<String> trashLabels = {
       'Comics', 'Cheeseburger', 'Petal', 'Fast Food', 'Hot dog', 'Junk', 'Juice', 'Icicle', 'Flesh', 'Food', 'Fruit', 'Shell', 'Newspaper', 'Plant', 'Paper', 'Pizza', 'Sushi', 'Cup', 'Wine', 'Soil', 'Branch', 'Garden', 'Flower', 'Vegetable', 'Glasses', 'Bag'
     }; 
-    final XFile? imageRaw = await imagePicker.pickImage(source: ImageSource.camera);
+    final XFile? imageRaw = await imagePicker.pickImage(source: ImageSource.gallery);
     final InputImage inputImage = InputImage.fromFilePath(imageRaw!.path);
     final List<ImageLabel> labels = await imageLabeler.processImage(inputImage);
     imageLabeler.close();
