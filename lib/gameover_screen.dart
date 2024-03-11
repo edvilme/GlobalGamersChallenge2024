@@ -58,8 +58,8 @@ class GameOverScreenState extends State<GameOverScreen> {
     int score = scoreData.getInt('score') ?? 0;
     int previousHighScore = scoreData.getInt('highscore') ?? 0;
     ScoreAchievement previousScoreAchievement = getAchievementFromScore(previousHighScore);
+    ScoreAchievement currentScoreAchievement = getAchievementFromScore(score);
     if (score > previousHighScore){
-      ScoreAchievement currentScoreAchievement = getAchievementFromScore(score);
       scoreData.setInt('highscore', score);
       setState(() {
         isHighScore = true;
@@ -94,7 +94,7 @@ class GameOverScreenState extends State<GameOverScreen> {
               "hexBackgroundColor": "#4285f4",
               "logo": {
                 "sourceUri": {
-                  "uri": "https://raw.githubusercontent.com/edvilme/GlobalGamersChallenge2024/main/assets/images/app_icon.png"
+                  "uri": "https://raw.githubusercontent.com/edvilme/TrashBall/main/assets/images/app_icon.png"
                 }
               },
               "cardTitle": {
@@ -117,7 +117,7 @@ class GameOverScreenState extends State<GameOverScreen> {
               },
               "heroImage": {
                 "sourceUri": {
-                  "uri": "https://github.com/edvilme/GlobalGamersChallenge2024/blob/main/assets/images/passes/${achievement.name}.jpg?raw=true"
+                  "uri": "https://github.com/edvilme/TrashBall/blob/main/assets/images/passes/${achievement.name}.jpg?raw=true"
                 }
               },
               "textModulesData": [
@@ -138,7 +138,7 @@ class GameOverScreenState extends State<GameOverScreen> {
       return AddToGoogleWalletButton(pass: generateGoogleWalletPass());
     }
     else {
-      return const Spacer();
+      return Container();
     }
   }
 
@@ -154,14 +154,20 @@ class GameOverScreenState extends State<GameOverScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const Spacer(),
+              Text("TRASH LEVELS TOO HIGH", 
+                textAlign: TextAlign.center,
+                style: 
+                  Theme.of(context).primaryTextTheme.titleSmall,),
               Text( isHighScore ? "High Score: \n$highScore" : "GAME OVER",
                 textAlign: TextAlign.center,
                 style: 
                   Theme.of(context).textTheme.displayLarge!.copyWith(color: Colors.white, fontWeight: FontWeight.bold),), 
-              Text(!kIsWeb && (Platform.isIOS || Platform.isAndroid) ? "There is too much trash! Gain extra lives by cleaning up the environment in the real world! Upload a picture of any litter around you!" : "There is too much trash!", 
+              Text(!kIsWeb && (Platform.isIOS || Platform.isAndroid) ? "Gain extra lives by cleaning up the environment in the real world and uploading a picture of any litter around you" : "There is too much trash!", 
                 textAlign: TextAlign.center,
                 style:
                   Theme.of(context).textTheme.bodyLarge!.copyWith(color: Colors.white),),
+              const Spacer(),
               renderAddToGoogleWalletButton(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -178,7 +184,7 @@ class GameOverScreenState extends State<GameOverScreen> {
                       chooseImage(context);
                     },
                     icon: const Icon(Icons.image),
-                    label: const Text("Get more lives"),) : const Spacer()
+                    label: const Text("Get more lives"),) : Container()
                 ],
               )
             ],
@@ -192,7 +198,7 @@ class GameOverScreenState extends State<GameOverScreen> {
     Set<String> trashLabels = {
       'Comics', 'Cheeseburger', 'Petal', 'Fast Food', 'Hot dog', 'Junk', 'Juice', 'Icicle', 'Flesh', 'Food', 'Fruit', 'Shell', 'Newspaper', 'Plant', 'Paper', 'Pizza', 'Sushi', 'Cup', 'Wine', 'Soil', 'Branch', 'Garden', 'Flower', 'Vegetable', 'Glasses', 'Bag'
     }; 
-    final XFile? imageRaw = await imagePicker.pickImage(source: ImageSource.gallery);
+    final XFile? imageRaw = await imagePicker.pickImage(source: ImageSource.camera);
     final InputImage inputImage = InputImage.fromFilePath(imageRaw!.path);
     final List<ImageLabel> labels = await imageLabeler.processImage(inputImage);
     imageLabeler.close();

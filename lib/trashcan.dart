@@ -5,6 +5,7 @@ import 'package:trash_game/trashgame.dart';
 import 'package:trash_game/trashitem.dart';
 import 'package:flame/effects.dart';
 
+
 class Trashcan extends SpriteComponent with HasGameRef<TrashGame>, CollisionCallbacks {
   late String? type;
   late Function? onSameTypeTrashItemCollision;
@@ -23,7 +24,7 @@ class Trashcan extends SpriteComponent with HasGameRef<TrashGame>, CollisionCall
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    if (other is TrashItem) {
+    if (other is TrashItem && (center.x - other.center.x).abs() < size.x / 2 ) {
       if (other.type == type) {
         gameRef.addScore();
         bounce();

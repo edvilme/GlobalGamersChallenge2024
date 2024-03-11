@@ -1,6 +1,8 @@
 import 'dart:ui';
 
+import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/src/services/keyboard_key.g.dart';
 import 'package:trash_game/trashgame.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,31 +27,34 @@ class PauseScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const Spacer(),
               Text("PAUSE",
                 style: 
                   Theme.of(context).textTheme.displayLarge!.copyWith(color: Colors.white, fontWeight: FontWeight.bold),), 
-              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\nImage Labeling: Google ML Kit Image Labeling (Base Model)\n\n@edvilme 2024",
-                textAlign: TextAlign.center,
-                style: 
-                  Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: (){
                       game!.overlays.clear();
                       game!.resetGameParameters();
                     },
-                    child: const Text("Restart"),
-                  ),
-                  ElevatedButton(
+                    icon: const Icon(Icons.restart_alt_rounded),
+                    label: const Text("Restart"),),
+                  ElevatedButton.icon(
                     onPressed: (){
                       game!.overlays.clear();
                       game!.resumeGame();
                     },
-                    child: const Text("Resume")),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text("Resume"),),
                 ],
-              )
+              ),
+              const Spacer(),
+              Text("Gameplay and development: Eduardo Villalpando\nGraphic design: Rebeca Juárez\nImage Labeling: Google ML Kit Image Labeling (Base Model)\n\n@edvilme 2024",
+                textAlign: TextAlign.center,
+                style: 
+                  Theme.of(context).textTheme.labelSmall!.copyWith(color: Colors.white),),
             ],
           )
         ),
