@@ -7,6 +7,7 @@ void main() async {
   TrashGame game = TrashGame();
   runApp(
     MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: GameWidget(
         game: game,
         overlayBuilderMap: {
